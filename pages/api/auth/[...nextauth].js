@@ -1,5 +1,9 @@
 import NextAuth from 'next-auth';
 import GithubProvider from 'next-auth/providers/github';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export default NextAuth({
   providers: [
@@ -11,4 +15,6 @@ export default NextAuth({
   jwt: {
     signingKey: process.env.JWT_SIGNING_PRIVATE_KEY,
   },
+  adapter: PrismaAdapter(prisma),
+  database: process.env.DATABASE_URL,
 });
