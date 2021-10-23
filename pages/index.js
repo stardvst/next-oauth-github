@@ -1,6 +1,15 @@
+import { Box, Flex } from '@chakra-ui/layout';
+import {
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  Input,
+  Textarea,
+} from '@chakra-ui/react';
 import { useFormik } from 'formik';
-import { getSession, signIn, signOut } from 'next-auth/react';
+import { getSession } from 'next-auth/react';
 import * as Yup from 'yup';
+import { Button } from '@chakra-ui/button';
 
 export const PostSchema = Yup.object().shape({
   title: Yup.string().required('* Required'),
@@ -19,10 +28,7 @@ export default function Component({ session }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: '',
-          body: '',
-        }),
+        body: JSON.stringify(values),
       });
     },
     validationSchema: PostSchema,
@@ -31,50 +37,48 @@ export default function Component({ session }) {
 
   if (session) {
     return (
-      <>
-        Signed in as {session.user.email} <br />
-        <form onSubmit={formik.handleSubmit}>
-          <div>
-            <label htmlFor="title">
-              Title:{' '}
-              <span style={{ color: 'red' }}>
-                {formik.touched?.title && formik?.errors?.title}
-              </span>
-              <input
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.title}
+      <Box mx="4" my="2" px="2" py="1">
+        <Flex flexDir="column">
+          <form onSubmit={formik.handleSubmit}>
+            <FormControl
+              id="title"
+              mb="4"
+              isInvalid={formik.touched?.title && formik?.errors?.title}
+            >
+              <FormLabel>Title</FormLabel>
+              <Input
                 type="text"
-                name="title"
-              />
-            </label>
-          </div>
-          <div>
-            <label htmlFor="body">
-              Body:{' '}
-              <span style={{ color: 'red' }}>
-                {formik.touched?.body && formik?.errors?.body}
-              </span>
-              <textarea
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.body}
-                name="body"
-              ></textarea>
-            </label>
-          </div>
-          <button type="submit">Submit</button>
-        </form>
-        <button onClick={() => signOut()}>Sign out</button>
-      </>
+              />
+              <FormErrorMessage>
+                {formik.touched?.title && formik?.errors?.title}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl
+              id="body"
+              isInvalid={formik.touched?.body && formik?.errors?.body}
+            >
+              <FormLabel>Body</FormLabel>
+              <Textarea
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.body}
+              />
+              <FormErrorMessage>
+                {formik.touched?.body && formik?.errors?.body}
+              </FormErrorMessage>
+            </FormControl>
+            <Button colorScheme="blue" mt="2" type="submit">
+              Submit
+            </Button>
+          </form>
+        </Flex>
+      </Box>
     );
   }
-  return (
-    <>
-      Not signed in <br />
-      <button onClick={() => signIn()}>Sign in</button>
-    </>
-  );
 }
 
 export const getServerSideProps = async ({ req }) => {
