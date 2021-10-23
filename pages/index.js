@@ -1,40 +1,67 @@
+import { useFormik } from 'formik';
 import { getSession, signIn, signOut } from 'next-auth/react';
-import { useState } from 'react';
+import * as Yup from 'yup';
+
+export const PostSchema = Yup.object().shape({
+  title: Yup.string().required('* Required'),
+  body: Yup.string().required('* Required'),
+});
 
 export default function Component({ session }) {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const formik = useFormik({
+    initialValues: {
+      title: '',
+      body: '',
+    },
+    onSubmit: (values, { setSubmitting }) => {
+      fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: '',
+          body: '',
+        }),
+      });
+    },
+    validationSchema: PostSchema,
+    validateOnBlur: true,
+  });
 
   if (session) {
     return (
       <>
         Signed in as {session.user.email} <br />
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            fetch('/api/posts', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ title, body }),
-            });
-          }}
-        >
+        <form onSubmit={formik.handleSubmit}>
           <div>
-            <label htmlFor="title">Title:</label>
-            <input
-              onChange={e => setTitle(e.target.value)}
-              type="text"
-              name="title"
-            />
+            <label htmlFor="title">
+              Title:{' '}
+              <span style={{ color: 'red' }}>
+                {formik.touched?.title && formik?.errors?.title}
+              </span>
+              <input
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.title}
+                type="text"
+                name="title"
+              />
+            </label>
           </div>
           <div>
-            <label htmlFor="body">Body:</label>
-            <textarea
-              onChange={e => setBody(e.target.value)}
-              name="body"
-            ></textarea>
+            <label htmlFor="body">
+              Body:{' '}
+              <span style={{ color: 'red' }}>
+                {formik.touched?.body && formik?.errors?.body}
+              </span>
+              <textarea
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.body}
+                name="body"
+              ></textarea>
+            </label>
           </div>
           <button type="submit">Submit</button>
         </form>
